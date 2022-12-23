@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+<canvas id="myCanvas" width="900" height="900" style="border:1px solid #000000;">
+</canvas>
+<script>
+var c = document.getElementById("myCanvas");
+
+var ctx = c.getContext("2d");
+//ctx.beginPath();
+const size = 10;
+const Boardsize = 900 / size;
+let next = new Array();
+let current = new Array();
+for (let i = 0; i<Boardsize; i++){
+	current[i] = new Array(Boardsize);
+    next[i] = new Array(Boardsize);
+}
+
+
+
+function init(){
+    
+	for (let i = 0; i<Boardsize; i++){
+    	for (let j = 0; j<Boardsize; j++){
+        	current[i][j] = 0;
+        }
+    }
+}
+
+function init_random(){
+    
+	for (let i = 0; i<Boardsize; i++){
+    	for (let j = 0; j<Boardsize; j++){
+        	current[i][j] = Math.round(Math.random()-0.4);
+        }
+    }
+}
+
+function next_iter(){
+	for (let i = 0; i<Boardsize; i++){
+    	for (let j = 0; j<Boardsize; j++){
+        	let d = 0;
+            let id = -1;
+            
+            while (id<2){
+            	let jd = -1;
+            	while (jd<2){
+                	if (jd == 0 && id == 0) { jd++; continue;}
+                	d += current[((i+id)%Boardsize+Boardsize)%Boardsize][((j+jd)%Boardsize+Boardsize)%Boardsize];
+                    jd++;
+                }
+                id++;
+            }
+            if (current[i][j]==1 && (d==3 || d==2)) {
+            	next[i][j] = 1;
+            } else if (d == 3) next[i][j] = 1; else next[i][j] = 0;
+            
+        }
+    }
+    
+    for (let i = 0; i<Boardsize; i++){
+    	for (let j = 0; j<Boardsize; j++){
+			current[i][j] = next[i][j];
+		}
+    }
+}
+
+function draw(){
+	for (let i = 0; i<Boardsize; i++) {
+      for (let j = 0; j<Boardsize; j++) {
+      	if (current[i][j] == 1) {ctx.fillRect(i*size,j*size,size,size);}
+        else {
+            //ctx.fillStyle = "FFFFFF" ;ctx.fillRect(i*50,j*50,50,50);
+        }
+      }
+	}
+}
+
+init();
+
+let _is_started = 0;
+
+function run_random(){
+    init_random();
+    run();
+}
+
+var cur_run;
+
+function run(){
+    if (_is_started==0){
+        cur_run = setInterval((function(){
+        ctx.clearRect(0, 0, c.width, c.height);
+        draw();
+        next_iter();
+
+        ctx.stroke();
+        
+    }), 10);
+    _is_started = 1;
+    
+}
+}
+
+
+function Clear(){
+    clearInterval(cur_run);
+    _is_started = 0;
+    ctx.clearRect(0, 0, c.width, c.height);
+    init();
+}
+
+function Stop(){
+    clearInterval(cur_run);
+    ctx.clearRect(0, 0, c.width, c.height);
+    draw();
+    _is_started = 0;
+}
+
+function printMousePos(event) {
+  document.body.textContent =
+    "clientX: " + event.clientX +
+    " - clientY: " + event.clientY;
+}
+
+function draw_mouse(event){
+    if (event.clientX > 10 && event.clientX < 910 && event.clientY > 10 && event.clientY < 910) {
+        let x = Math.floor(event.clientX/10)-1;
+        let y = Math.floor(event.clientY/10)-1;
+        current[x][y] = (current[x][y] + 1) % 2;
+        ctx.clearRect(0, 0, c.width, c.height);
+        draw();
+    }
+
+}
+
+document.addEventListener("click",draw_mouse)
+
+
+</script>
+
+</body>
+<input type="Button" value="Start current" onclick="run()"></button>
+<input type="Button" value="Start random" onclick="run_random()"></button>
+<input type="Button" id="ClearBtn" value="Clear" onclick="Clear()"></button>
+<input type="Button" id="StopBtn" value="Stop" onclick="Stop()"></button>
+</html>
